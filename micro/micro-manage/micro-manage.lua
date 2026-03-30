@@ -9,7 +9,7 @@ local os = import("os")
 local filepath = import("path/filepath")
 local strings = import("strings")
 
-local PLUGIN = "control"
+local PLUGIN = "micro-manage"
 
 local fifo_job = nil
 local fifo_path = nil
@@ -44,7 +44,7 @@ end
 
 local function get_fifo_path()
     local root = get_runtime_dir()
-    return root .. "/micro-control-" .. get_session() .. ".fifo"
+    return root .. "/micro-manage-" .. get_session() .. ".fifo"
 end
 
 local function norm_path(p)
@@ -161,7 +161,7 @@ local function open_in_new_tab(path)
     if staterr == nil then
         buf, err = mbuf.NewBufferFromFile(path)
         if err ~= nil or buf == nil then
-            micro.InfoBar():Error("control: open failed: " .. tostring(err))
+            micro.InfoBar():Error("micro-manage: open failed: " .. tostring(err))
             return false
         end
     else
@@ -184,7 +184,7 @@ end
 local function with_target(path, fn_name, fn)
     local item = find_pane_by_path(path)
     if item == nil then
-        micro.InfoBar():Error("control: file not open: " .. tostring(path))
+        micro.InfoBar():Error("micro-manage: file not open: " .. tostring(path))
         return false
     end
 
@@ -192,7 +192,7 @@ local function with_target(path, fn_name, fn)
 
     local ok, err = pcall(fn, item.pane)
     if not ok then
-        micro.InfoBar():Error("control: " .. fn_name .. " failed: " .. tostring(err))
+        micro.InfoBar():Error("micro-manage: " .. fn_name .. " failed: " .. tostring(err))
         return false
     end
 
@@ -247,7 +247,7 @@ local function dispatch(action, path)
         return do_redo(path)
     end
 
-    micro.InfoBar():Error("control: unknown action: " .. action)
+    micro.InfoBar():Error("micro-manage: unknown action: " .. action)
     return false
 end
 
@@ -259,7 +259,7 @@ local function handle_line(line)
 
     local idx = strings.Index(line, ":")
     if idx == nil or idx < 0 then
-        micro.InfoBar():Error("control: invalid command: " .. line)
+        micro.InfoBar():Error("micro-manage: invalid command: " .. line)
         return
     end
 
@@ -267,7 +267,7 @@ local function handle_line(line)
     local path = string.sub(line, idx + 2)
 
     if action == "" or path == "" then
-        micro.InfoBar():Error("control: invalid command: " .. line)
+        micro.InfoBar():Error("micro-manage: invalid command: " .. line)
         return
     end
 
@@ -325,7 +325,7 @@ local function start_fifo_job()
         end,
         function(out, userargs)
             if out ~= nil and out ~= "" then
-                micro.InfoBar():Error("control: " .. tostring(out))
+                micro.InfoBar():Error("micro-manage: " .. tostring(out))
             end
         end,
         function(out, userargs)

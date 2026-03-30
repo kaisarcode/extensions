@@ -1,15 +1,15 @@
 #!/bin/bash
-# test.sh - Automated test suite for control.
-# Summary: Tiered testing for control plugin session and FIFO behavior.
+# test.sh - Automated test suite for micro-manage
+# Summary: Tiered testing for micro-manage plugin session and FIFO behavior.
 #
 # Author:  KaisarCode
 # Website: https://kaisarcode.com
 # License: GNU GPL v3.0
-
 set -e
 
 SCRIPT_DIR=$(CDPATH='' cd -- "$(dirname "$0")" && pwd)
 APP_ROOT="$SCRIPT_DIR"
+PLUGIN_LOAD_DIR=""
 TMP_DIR=""
 CONFIG_DIR=""
 RUNTIME_DIR=""
@@ -19,6 +19,7 @@ PRIMARY_FILE=""
 SECONDARY_FILE=""
 CONTROL_FIFO=""
 MICRO_PID=""
+TEST_SESSION="micro-manage-test"
 
 # Prints failure details to standard output.
 # @param message Error description.
@@ -136,16 +137,39 @@ expect_file() {
     fail "$label: expected [$expected], got [$actual]"
 }
 
-# Starts a temporary micro instance with the control plugin loaded.
+# Starts a temporary micro instance with the micro-manage plugin loaded.
 # @return 0 on success.
 start_micro() {
-    mkdir -p "$CONFIG_DIR/plug" "$RUNTIME_DIR"
-    ln -s "$APP_ROOT" "$CONFIG_DIR/plug/control"
+    mkdir -p "$CONFIG_DIR/plug" "$RUNTIME_DIR" "$PLUGIN_LOAD_DIR"
+    ln -s "$APP_ROOT/micro-manage.lua" "$PLUGIN_LOAD_DIR/micromanage.lua"
+    cat > "$PLUGIN_LOAD_DIR/repo.json" <<'EOF'
+[
+    {
+        "Name": "micromanage",
+        "Description": "Temporary load alias for micro-manage tests",
+        "Website": "https://kaisarcode.com",
+        "Tags": ["micro-manage", "fifo", "automation"],
+        "Versions": [
+            {
+                "Version": "1.0.0",
+                "Url": "local",
+                "Require": {
+                    "micro": ">=2.0.0"
+                }
+            }
+        ]
+    }
+]
+EOF
+    cat > "$CONFIG_DIR/settings.json" <<EOF
+{
+    "micro-manage.session": "$TEST_SESSION"
+}
+EOF
     : > "$PRIMARY_FILE"
     mkfifo "$INPUT_FIFO"
 
-    script -q -c "env TERM=xterm MICRO_TRUECOLOR=0 XDG_RUNTIME_DIR='$RUNTIME_DIR' micro -config-dir '$CONFIG_DIR' '$PRIMARY_FILE'" /dev/null \
-        < "$INPUT_FIFO" > "$MICRO_LOG" 2>&1 &
+    setsid bash -c "script -q -c \"env TERM=xterm MICRO_TRUECOLOR=0 XDG_RUNTIME_DIR='$RUNTIME_DIR' micro -config-dir '$CONFIG_DIR' '$PRIMARY_FILE'\" /dev/null < '$INPUT_FIFO' > '$MICRO_LOG' 2>&1" &
     MICRO_PID="$!"
 
     exec 3> "$INPUT_FIFO"
@@ -157,14 +181,16 @@ test_setup() {
     TMP_DIR="$(mktemp -d)"
     CONFIG_DIR="$TMP_DIR/config"
     RUNTIME_DIR="$TMP_DIR/runtime"
+    PLUGIN_LOAD_DIR="$CONFIG_DIR/plug/micromanage"
     INPUT_FIFO="$TMP_DIR/input.fifo"
     MICRO_LOG="$TMP_DIR/micro.log"
     PRIMARY_FILE="$TMP_DIR/primary.txt"
     SECONDARY_FILE="$TMP_DIR/secondary.txt"
-    CONTROL_FIFO="$RUNTIME_DIR/micro-control-default.fifo"
+    CONTROL_FIFO="$RUNTIME_DIR/micro-manage-$TEST_SESSION.fifo"
 
     require_command micro
     require_command script
+    require_command setsid
     pass "Environment verified: using $(command -v micro)"
 }
 
@@ -176,7 +202,7 @@ test_general() {
     pass "General: control FIFO creation verified."
 }
 
-# Verifies control actions against a real micro session.
+# Verifies command handling against a real micro session.
 # @return 0 on success.
 test_functional() {
     send_keys 'abc'

@@ -1,9 +1,9 @@
 [
   {
-    "Name": "control",
-    "Description": "External control interface for micro via FIFO",
+    "Name": "micro-manage",
+    "Description": "External micro-manage interface for micro via FIFO",
     "Website": "https://kaisarcode.com",
-    "Tags": ["control", "fifo", "automation"],
+    "Tags": ["micro-manage", "fifo", "automation"],
     "Versions": [
       {
         "Version": "1.0.0",

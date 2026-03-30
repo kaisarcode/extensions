@@ -1,8 +1,8 @@
-# control
+# micro-manage
 
-External control interface for `micro`.
+External micro-manage interface for `micro`.
 
-`control` exposes a small command surface through a FIFO so an external process can operate on files opened in a running `micro` instance.
+`micro-manage` exposes a small command surface through a FIFO so an external process can operate on files opened in a running `micro` instance.
 
 This is useful when `micro` acts as a lightweight visual surface while another tool, script, watcher, or agent edits files independently.
 
@@ -75,7 +75,7 @@ Each running `micro` instance exposes its own FIFO.
 The FIFO name is derived from the configured session name:
 
 ```text
-${XDG_RUNTIME_DIR:-/tmp}/micro-control-<session>.fifo
+${XDG_RUNTIME_DIR:-/tmp}/micro-manage-<session>.fifo
 ```
 
 The default session name is:
@@ -87,7 +87,7 @@ default
 So the default FIFO path is:
 
 ```text
-${XDG_RUNTIME_DIR:-/tmp}/micro-control-default.fifo
+${XDG_RUNTIME_DIR:-/tmp}/micro-manage-default.fifo
 ```
 
 ## Starting micro
@@ -101,13 +101,13 @@ micro
 Named session:
 
 ```bash
-micro -control.session agent
+micro -micro-manage.session agent
 ```
 
 Another named session:
 
 ```bash
-micro -control.session review
+micro -micro-manage.session review
 ```
 
 ## Sending Commands
@@ -117,19 +117,19 @@ Write commands directly to the FIFO.
 Open a file in the default session:
 
 ```bash
-printf '%s\n' 'open:/tmp/test.txt' > "${XDG_RUNTIME_DIR:-/tmp}/micro-control-default.fifo"
+printf '%s\n' 'open:/tmp/test.txt' > "${XDG_RUNTIME_DIR:-/tmp}/micro-manage-default.fifo"
 ```
 
 Reload the same file:
 
 ```bash
-printf '%s\n' 'reload:/tmp/test.txt' > "${XDG_RUNTIME_DIR:-/tmp}/micro-control-default.fifo"
+printf '%s\n' 'reload:/tmp/test.txt' > "${XDG_RUNTIME_DIR:-/tmp}/micro-manage-default.fifo"
 ```
 
 Use a named session:
 
 ```bash
-printf '%s\n' 'open:/home/user/project/main.go' > "${XDG_RUNTIME_DIR:-/tmp}/micro-control-agent.fifo"
+printf '%s\n' 'open:/home/user/project/main.go' > "${XDG_RUNTIME_DIR:-/tmp}/micro-manage-agent.fifo"
 ```
 
 ## Installation
@@ -137,8 +137,8 @@ printf '%s\n' 'open:/home/user/project/main.go' > "${XDG_RUNTIME_DIR:-/tmp}/micr
 Expected layout:
 
 ```text
-~/.config/micro/plug/control/control.lua
-~/.config/micro/plug/control/repo.json
+~/.config/micro/plug/micro-manage/micro-manage.lua
+~/.config/micro/plug/micro-manage/repo.json
 ```
 
 ## Design Notes
@@ -157,7 +157,7 @@ Typical flow:
 
 1. An external process edits files.
 2. A watcher or script decides when to notify `micro`.
-3. `control` receives commands through the FIFO.
+3. `micro-manage` receives commands through the FIFO.
 4. `micro` reflects the state of those files.
 
 This makes `micro` useful as a lightweight real-time viewer and operator surface for externally managed file changes.
