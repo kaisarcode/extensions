@@ -1,0 +1,17 @@
+[
+  {
+    "Name": "control",
+    "Description": "External control interface for micro via FIFO",
+    "Website": "https://kaisarcode.com",
+    "Tags": ["control", "fifo", "automation"],
+    "Versions": [
+      {
+        "Version": "1.0.0",
+        "Url": "local",
+        "Require": {
+          "micro": ">=2.0.0"
+        }
+      }
+    ]
+  }
+]
