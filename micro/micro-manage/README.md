@@ -1,10 +1,13 @@
 # micro-manage
 
-External micro-manage interface for `micro`.
+Control a running `micro` instance from another process.
 
-`micro-manage` exposes a small command surface through a FIFO so an external process can operate on files opened in a running `micro` instance.
+`micro-manage` listens on a FIFO and maps simple file-oriented commands to the
+corresponding action inside `micro`, such as opening, saving, reloading,
+closing, undoing, or redoing.
 
-This is useful when `micro` acts as a lightweight visual surface while another tool, script, watcher, or agent edits files independently.
+It is meant for workflows where `micro` stays open as the editor while an
+external script, watcher, or agent needs to trigger actions in that session.
 
 ## Overview
 
@@ -17,7 +20,8 @@ The plugin currently supports these commands:
 - `undo:/path/to/file`
 - `redo:/path/to/file`
 
-Each command targets a file by path. The plugin resolves the matching internal buffer or pane inside `micro`.
+Each command targets a file by path. The plugin resolves the matching internal
+buffer or pane inside `micro`.
 
 ## Command Format
 
@@ -44,7 +48,8 @@ redo:/home/user/project/main.go
 
 - If the file is already open, focus it.
 - If it is not open, open it in a new tab.
-- If the file does not exist yet, open it anyway as a new file associated with that path.
+- If the file does not exist yet, open it anyway as a new file associated with
+    that path.
 
 ### `save:/path`
 
@@ -98,16 +103,18 @@ Default session:
 micro
 ```
 
-Named session:
+Named sessions can be set on the fly through an environment variable:
 
 ```bash
-micro -micro-manage.session agent
+MICRO_MANAGE_SESSION=agent micro
 ```
 
-Another named session:
+If the environment variable is not set, the plugin uses `default`.
 
-```bash
-micro -micro-manage.session review
+With the environment variable set, the FIFO becomes:
+
+```text
+${XDG_RUNTIME_DIR:-/tmp}/micro-manage-agent.fifo
 ```
 
 ## Sending Commands
@@ -134,16 +141,19 @@ printf '%s\n' 'open:/home/user/project/main.go' > "${XDG_RUNTIME_DIR:-/tmp}/micr
 
 ## Installation
 
-Expected layout:
+Repository layout:
 
 ```text
-~/.config/micro/plug/micro-manage/micro-manage.lua
-~/.config/micro/plug/micro-manage/repo.json
+micro-manage.lua
+repo.json
+README.md
+test.sh
 ```
 
 ## Design Notes
 
-The goal is to keep the entry point simple and stable so other tools can communicate with it however they prefer:
+The goal is to keep the entry point simple and stable so other tools can
+communicate with it however they prefer:
 
 - Direct shell commands
 - Watchers
@@ -160,4 +170,17 @@ Typical flow:
 3. `micro-manage` receives commands through the FIFO.
 4. `micro` reflects the state of those files.
 
-This makes `micro` useful as a lightweight real-time viewer and operator surface for externally managed file changes.
+This makes `micro` useful as a lightweight real-time viewer and operator
+surface for externally managed file changes.
+
+---
+
+**Author:** KaisarCode
+
+**Email:** <kaisar@kaisarcode.com>
+
+**Website:** [https://kaisarcode.com](https://kaisarcode.com)
+
+**License:** [GNU GPL v3.0](https://www.gnu.org/licenses/gpl-3.0.html)
+
+© 2026 KaisarCode

@@ -161,15 +161,10 @@ start_micro() {
     }
 ]
 EOF
-    cat > "$CONFIG_DIR/settings.json" <<EOF
-{
-    "micro-manage.session": "$TEST_SESSION"
-}
-EOF
     : > "$PRIMARY_FILE"
     mkfifo "$INPUT_FIFO"
 
-    setsid bash -c "script -q -c \"env TERM=xterm MICRO_TRUECOLOR=0 XDG_RUNTIME_DIR='$RUNTIME_DIR' micro -config-dir '$CONFIG_DIR' '$PRIMARY_FILE'\" /dev/null < '$INPUT_FIFO' > '$MICRO_LOG' 2>&1" &
+    setsid bash -c "script -q -c \"env TERM=xterm MICRO_TRUECOLOR=0 XDG_RUNTIME_DIR='$RUNTIME_DIR' MICRO_MANAGE_SESSION='$TEST_SESSION' micro -config-dir '$CONFIG_DIR' '$PRIMARY_FILE'\" /dev/null < '$INPUT_FIFO' > '$MICRO_LOG' 2>&1" &
     MICRO_PID="$!"
 
     exec 3> "$INPUT_FIFO"

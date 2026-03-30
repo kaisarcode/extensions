@@ -34,12 +34,12 @@ local function get_runtime_dir()
 end
 
 local function get_session()
-    local s = config.GetGlobalOption(PLUGIN .. ".session")
-    s = tostring(s or "")
-    if s == "" then
-        s = "default"
+    local env = os.Getenv("MICRO_MANAGE_SESSION")
+    env = tostring(env or "")
+    if env ~= "" then
+        return env
     end
-    return s
+    return "default"
 end
 
 local function get_fifo_path()
@@ -334,7 +334,6 @@ local function start_fifo_job()
 end
 
 function init()
-    config.RegisterGlobalOption(PLUGIN, "session", "default")
     start_fifo_job()
 end
 
