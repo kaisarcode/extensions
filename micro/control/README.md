@@ -141,29 +141,7 @@ Expected layout:
 ~/.config/micro/plug/control/repo.json
 ```
 
-## Testing
-
-There is one test script in the repository:
-
-```bash
-./test.sh
-```
-
-Start `micro` first:
-
-```bash
-micro
-```
-
-Then run `./test.sh`.
-
-The script waits for the FIFO and walks through `open`, `reload`, `undo`, `redo`, `save`, and `close`. It exits with success when the sequence was sent correctly, or with failure if the plugin FIFO is not available.
-
 ## Design Notes
-
-`control` is intentionally minimal.
-
-It does not expose internal `micro` identifiers through the external interface. The public interface uses file paths only, and the plugin resolves the corresponding internal buffer or pane on its own.
 
 The goal is to keep the entry point simple and stable so other tools can communicate with it however they prefer:
 
@@ -183,19 +161,3 @@ Typical flow:
 4. `micro` reflects the state of those files.
 
 This makes `micro` useful as a lightweight real-time viewer and operator surface for externally managed file changes.
-
-## Limitations
-
-The current scope is intentionally narrow:
-
-- One FIFO per running `micro` session
-- One command per line
-- Path-based targeting only
-- No wrapper CLI included yet
-- No higher-level protocol yet
-
-## Future Direction
-
-More commands can be added later depending on what `micro` supports cleanly.
-
-For now, the plugin focuses on a simple file-oriented external control surface.
